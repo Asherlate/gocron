@@ -4,9 +4,11 @@
 package main
 
 import (
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	macaron "gopkg.in/macaron.v1"
 
@@ -21,14 +23,16 @@ import (
 )
 
 var (
-	AppVersion           = "1.5"
-	BuildDate, GitCommit string
+	AppVersion = "1.5"
+	GitCommit  string
+	BuildDate  string
 )
 
 // web服务器默认端口
 const DefaultPort = 5920
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	cliApp := cli.NewApp()
 	cliApp.Name = "gocron"
 	cliApp.Usage = "gocron service"

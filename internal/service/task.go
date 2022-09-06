@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -248,6 +249,7 @@ func (h *RPCHandler) Run(taskModel models.Task, taskUniqueId int64) (result stri
 	taskRequest.Command = taskModel.Command
 	taskRequest.Id = taskUniqueId
 	resultChan := make(chan TaskResult, len(taskModel.Hosts))
+
 	for _, taskHost := range taskModel.Hosts {
 		go func(th models.TaskHostDetail) {
 			output, err := rpcClient.Exec(th.Name, th.Port, taskRequest)
@@ -321,6 +323,9 @@ func createJob(taskModel models.Task) cron.FuncJob {
 	if handler == nil {
 		return nil
 	}
+
+	taskModel = choseSchedulerNode(taskModel)
+
 	taskFunc := func() {
 		taskCount.Add()
 		defer taskCount.Done()
@@ -345,6 +350,26 @@ func createJob(taskModel models.Task) cron.FuncJob {
 	}
 
 	return taskFunc
+}
+
+// 选择其中一个节点进行调度
+func choseSchedulerNode(taskModel models.Task) models.Task {
+
+	if taskModel.Protocol == models.TaskRPC {
+		var hosts []models.TaskHostDetail
+
+		if len(taskModel.Hosts) > 1 {
+			r := rand.Intn(len(taskModel.Hosts))
+
+			hosts = []models.TaskHostDetail{taskModel.Hosts[r]}
+		} else {
+			hosts = taskModel.Hosts
+		}
+
+		taskModel.Hosts = hosts
+	}
+
+	return taskModel
 }
 
 func createHandler(taskModel models.Task) Handler {
@@ -456,7 +481,7 @@ func SendNotification(taskModel models.Task, taskResult TaskResult) {
 		"output":           taskResult.Result,
 		"status":           statusName,
 		"task_id":          taskModel.Id,
-		"remark":  			taskModel.Remark,
+		"remark":           taskModel.Remark,
 	}
 	notify.Push(msg)
 }
