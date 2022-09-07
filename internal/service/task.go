@@ -324,8 +324,6 @@ func createJob(taskModel models.Task) cron.FuncJob {
 		return nil
 	}
 
-	taskModel = choseSchedulerNode(taskModel)
-
 	taskFunc := func() {
 		taskCount.Add()
 		defer taskCount.Done()
@@ -340,11 +338,13 @@ func createJob(taskModel models.Task) cron.FuncJob {
 			defer runInstance.done(taskModel.Id)
 		}
 
+		execTask := choseSchedulerNode(taskModel)
+
 		concurrencyQueue.Add()
 		defer concurrencyQueue.Done()
 
 		logger.Infof("开始执行任务#%s#命令-%s", taskModel.Name, taskModel.Command)
-		taskResult := execJob(handler, taskModel, taskLogId)
+		taskResult := execJob(handler, execTask, taskLogId)
 		logger.Infof("任务完成#%s#命令-%s", taskModel.Name, taskModel.Command)
 		afterExecJob(taskModel, taskResult, taskLogId)
 	}
