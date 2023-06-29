@@ -47,6 +47,7 @@ func Exec(ip string, port int, taskReq *pb.TaskRequest) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	if taskReq.Timeout <= 0 || taskReq.Timeout > 86400 {
 		taskReq.Timeout = 86400
 	}

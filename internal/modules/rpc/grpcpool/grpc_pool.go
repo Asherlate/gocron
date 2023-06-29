@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	backOffMaxDelay = 3 * time.Second
-	dialTimeout     = 2 * time.Second
+	backOffMaxDelay                 = 3 * time.Second
+	dialTimeout                     = 2 * time.Second
+	maxDefaultGrpcReceiveBufferSize = 100 * 1024 * 1024
 )
 
 var (
@@ -81,6 +82,7 @@ func (p *GRPCPool) factory(addr string) (*Client, error) {
 	opts := []grpc.DialOption{
 		grpc.WithKeepaliveParams(keepAliveParams),
 		grpc.WithBackoffMaxDelay(backOffMaxDelay),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxDefaultGrpcReceiveBufferSize)),
 	}
 
 	if !app.Setting.EnableTLS {
