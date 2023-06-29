@@ -16,7 +16,7 @@ import (
 const (
 	backOffMaxDelay                 = 3 * time.Second
 	dialTimeout                     = 2 * time.Second
-	maxDefaultGrpcReceiveBufferSize = 100 * 1024 * 1024
+	maxDefaultGrpcReceiveBufferSize = 10 * 1024 * 1024
 )
 
 var (
